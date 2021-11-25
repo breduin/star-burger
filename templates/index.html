@@ -30,5 +30,18 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
     {% csrf_token %}
     <script src="{% static 'index.js' %}"></script>
+
+<!-- Styles and js-files for dadata.ru service (address suggestions) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@20.3.0/dist/css/suggestions.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/suggestions-jquery@20.3.0/dist/js/jquery.suggestions.min.js"></script>
+
+    <script>
+        $("#address").suggestions({
+            token: "415ad698a334186b4dcdcb76a4b9c331ed2c14c3",
+            type: "ADDRESS",
+        });
+    </script>
+
   </body>
 </html>

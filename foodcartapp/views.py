@@ -1,8 +1,13 @@
+import json
+from loguru import logger
+
 from django.http import JsonResponse
 from django.templatetags.static import static
 
+from .models import Product, Order, OrderProductItem
 
-from .models import Product
+
+logger.add('logs/star-burger.log', format="{time} {level} {message}", rotation="1 MB", level='ERROR')
 
 
 def banners_list_api(request):
@@ -58,5 +63,31 @@ def product_list_api(request):
 
 
 def register_order(request):
-    # TODO это лишь заглушка
+    try:
+        data = json.loads(request.body.decode())
+    except ValueError:
+        return JsonResponse({
+            'error': 'Ошибка данных',
+        })
+
+    order_raw = data.copy()
+    del order_raw['products']
+
+    order = Order.objects.create(**order_raw)
+
+    products = data['products']
+    for product_item in products:
+        product_id = product_item['product']
+        product_quantity = product_item['quantity']
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return JsonResponse({
+            'error': 'Такого продукта не существует',
+            })
+        order_product_item = OrderProductItem.objects.create(product=product,
+                                                             quantity=product_quantity,
+                                                             order=order,
+                                                             )
+
     return JsonResponse({})
