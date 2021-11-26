@@ -1,10 +1,12 @@
 import json
 from loguru import logger
+import phonenumbers
 
 from django.http import JsonResponse
 from rest_framework.response import Response
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
+from rest_framework import status
 
 from .models import Product, Order, OrderProductItem
 
@@ -64,30 +66,74 @@ def product_list_api(request):
     })
 
 
+def validate_data_from_frontend(data: dict) -> ([str, None], [status, None]):
+
+    # Checks the required fields are presented.
+    required_fields = [
+        'products', 'firstname', 'phonenumber', 'address',
+        ]
+    are_required_fields_in_data = {x: x in data.keys() for x in required_fields}
+    if not all(are_required_fields_in_data.values()):
+        return f'Required fields lack: {[x for x in required_fields if not are_required_fields_in_data[x] ]}', \
+            status.HTTP_417_EXPECTATION_FAILED
+    
+    # Checks the product field is list and is not empty
+    products = data['products']
+    if not isinstance(products, list):
+        return '"Products" field must be of list type.', status.HTTP_406_NOT_ACCEPTABLE
+    if len(products) == 0:
+        return '"Products" field must not be empty.', status.HTTP_411_LENGTH_REQUIRED
+
+    # Checks the products exist
+    products = data['products']
+    for product_item in products:
+        try:
+            product_id = product_item['product']
+            product_quantity = product_item['quantity']
+            product = Product.objects.get(id=product_id)
+        except KeyError:
+            return f'No product or its quantity in products list.', \
+                status.HTTP_406_NOT_ACCEPTABLE
+        except Product.DoesNotExist:
+            return f'The product with id={product_id} does not exist.', \
+                status.HTTP_404_NOT_FOUND
+
+    # Checks the phone number
+    phonenumber = data['phonenumber']
+    try:
+        phonenumbers.parse(phonenumber, None)
+    except phonenumbers.phonenumberutil.NumberParseException as e:
+        return f'Phone field: {e._msg}', status.HTTP_406_NOT_ACCEPTABLE
+
+    return None, None
+
+
 @api_view(['POST'])
 def register_order(request):
     try:
         data = request.data
     except ValueError:
         return JsonResponse({
-            'error': 'Ошибка данных',
+            'error': 'Data error',
         })
+
+    validation_error, error_status = validate_data_from_frontend(data)
+    if validation_error:
+        return Response({
+            'error': validation_error,
+        },
+        status=error_status
+        )
 
     order_raw = data.copy()
     del order_raw['products']
-
     order = Order.objects.create(**order_raw)
 
     products = data['products']
     for product_item in products:
         product_id = product_item['product']
         product_quantity = product_item['quantity']
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return JsonResponse({
-            'error': 'Такого продукта не существует',
-            })
+        product = Product.objects.get(id=product_id)
         order_product_item = OrderProductItem.objects.create(product=product,
                                                              quantity=product_quantity,
                                                              order=order,
