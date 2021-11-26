@@ -70,19 +70,27 @@ def validate_data_from_frontend(data: dict) -> ([str, None], [status, None]):
 
     # Checks the required fields are presented.
     required_fields = [
-        'products', 'firstname', 'phonenumber', 'address',
+        'products', 'firstname', 'lastname', 'phonenumber', 'address',
         ]
+  
     are_required_fields_in_data = {x: x in data.keys() for x in required_fields}
     if not all(are_required_fields_in_data.values()):
         return f'Required fields lack: {[x for x in required_fields if not are_required_fields_in_data[x] ]}', \
             status.HTTP_417_EXPECTATION_FAILED
     
-    # Checks the product field is list and is not empty
+    # Checks the not nullable fields are not null.
+    non_null_fields = [
+        'products', 'firstname', 'lastname', 'phonenumber', 'address',
+        ]  
+    are_fields_not_null = {x: bool(data[x]) for x in non_null_fields}
+    if not all(are_fields_not_null.values()):
+        return f'Fields are empty: {[x for x in non_null_fields if not are_fields_not_null[x] ]}', \
+            status.HTTP_417_EXPECTATION_FAILED
+
+    # Checks the product field is list
     products = data['products']
     if not isinstance(products, list):
         return '"Products" field must be of list type.', status.HTTP_406_NOT_ACCEPTABLE
-    if len(products) == 0:
-        return '"Products" field must not be empty.', status.HTTP_411_LENGTH_REQUIRED
 
     # Checks the products exist
     products = data['products']
@@ -101,9 +109,17 @@ def validate_data_from_frontend(data: dict) -> ([str, None], [status, None]):
     # Checks the phone number
     phonenumber = data['phonenumber']
     try:
-        phonenumbers.parse(phonenumber, None)
+        parsed_phonenumber = phonenumbers.parse(phonenumber, None)
     except phonenumbers.phonenumberutil.NumberParseException as e:
         return f'Phone field: {e._msg}', status.HTTP_406_NOT_ACCEPTABLE
+    if not phonenumbers.is_valid_number(parsed_phonenumber):
+        return 'Phone number is invalid', status.HTTP_406_NOT_ACCEPTABLE
+
+
+    # Checks the firstname field is string
+    firstname = data['firstname']
+    if not isinstance(firstname, str):
+        return '"firstname" field must be of str type.', status.HTTP_406_NOT_ACCEPTABLE
 
     return None, None
 
