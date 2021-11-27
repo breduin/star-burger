@@ -11,16 +11,21 @@ class OrderProductItemSerializer(ModelSerializer):
             'quantity'
             ]    
 
-class OrderSerializer(ModelSerializer):
 
-    products = OrderProductItemSerializer(many=True, allow_empty=False)
+class OrderSerializer(ModelSerializer):
+    products = OrderProductItemSerializer(many=True, 
+                                          allow_empty=False, 
+                                          write_only=True
+                                          )
 
     class Meta:
-        model = Order
+        model = Order 
         fields = [
             'products',
+            'id',
             'firstname',
             'lastname',
             'phonenumber',
             'address'
             ]
+

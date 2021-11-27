@@ -80,5 +80,7 @@ def register_order(request):
                                                              quantity=product_quantity,
                                                              order=order,
                                                              )
-
-    return Response({})
+    
+    serializer = OrderSerializer(order)
+   
+    return Response(serializer.data)
