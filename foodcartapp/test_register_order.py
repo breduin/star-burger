@@ -1,11 +1,11 @@
 """
-Test of validate_data_from_frontend() 
+Test of register_order() 
 """
-
+from rest_framework.test import APIRequestFactory
 from django.test import TestCase
-from rest_framework import status
-from .models import Product, ProductCategory
-from .views import validate_data_from_frontend
+from django.urls import reverse
+from .models import Product, ProductCategory, Order
+from .views import register_order
 
 
 class TestValidationFunction(TestCase):
@@ -41,10 +41,14 @@ class TestValidationFunction(TestCase):
             "lastname": "Petrov",
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
-        }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertEqual(error, None)
-        self.assertEqual(error_status, None)  
+        }
+
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Order.objects.count(), 1)
 
 
     def test_products_field_is_string(self):
@@ -59,9 +63,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_406_NOT_ACCEPTABLE)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)        
+        self.assertEqual(response.status_code, 400)
 
 
     def test_products_field_is_null(self):
@@ -76,9 +82,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)        
+        self.assertEqual(response.status_code, 400)
 
 
     def test_products_field_is_empty_list(self):
@@ -93,9 +101,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_products_field_lacks(self):
@@ -109,9 +119,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_product_does_not_exist(self):
@@ -136,9 +148,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_404_NOT_FOUND)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_products_keys_lack(self):
@@ -151,7 +165,7 @@ class TestValidationFunction(TestCase):
 
         data = {
             "products": [
-                {"produkt": product1.id, 
+                {"produkt": product1.id, # misprint in "product"
                 "quantity": 1
                 },
                 {"product": product2.id, 
@@ -163,9 +177,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_406_NOT_ACCEPTABLE)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_firstname_is_null(self):
@@ -189,9 +205,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_firstname_is_list(self):
@@ -216,9 +234,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+79311234567",
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_406_NOT_ACCEPTABLE)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
 
@@ -240,9 +260,11 @@ class TestValidationFunction(TestCase):
                 },                
                 ], 
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_key_fields_are_null(self):
@@ -267,9 +289,11 @@ class TestValidationFunction(TestCase):
             "address": None,
             "phonenumber": None, 
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)  
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_phonenumber_is_empty(self):
@@ -294,9 +318,11 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "",                
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_417_EXPECTATION_FAILED)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
+
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)
 
 
     def test_phonenumber_is_invalid(self):
@@ -321,8 +347,8 @@ class TestValidationFunction(TestCase):
             "address": "Дыбенко",
             "phonenumber": "+70000000000",                
         }      
-        error, error_status = validate_data_from_frontend(data)
-        self.assertNotEqual(error, None)
-        self.assertEqual(error_status, status.HTTP_406_NOT_ACCEPTABLE)
+        factory = APIRequestFactory()
+        request = factory.post(reverse('foodcartapp:register_order'), data, format='json')
 
-
+        response = register_order(request)   
+        self.assertEqual(response.status_code, 400)

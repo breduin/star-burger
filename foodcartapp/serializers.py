@@ -1,0 +1,26 @@
+from rest_framework.serializers import ModelSerializer, ListField
+from .models import Order, OrderProductItem, Product
+
+
+class OrderProductItemSerializer(ModelSerializer):
+
+    class Meta:
+        model = OrderProductItem
+        fields = [
+            'product',
+            'quantity'
+            ]    
+
+class OrderSerializer(ModelSerializer):
+
+    products = OrderProductItemSerializer(many=True, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = [
+            'products',
+            'firstname',
+            'lastname',
+            'phonenumber',
+            'address'
+            ]
