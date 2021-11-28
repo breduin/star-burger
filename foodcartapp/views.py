@@ -77,14 +77,17 @@ def register_order(request):
 
     with transaction.atomic():
         order = Order.objects.create(**order_data)
+        order_product_items = []
         for product_item in products:
             product = product_item['product']
             product_quantity = product_item['quantity']
-            order_product_item = OrderProductItem.objects.create(product=product,
-                                                                product_price=product.price,
-                                                                quantity=product_quantity,
-                                                                order=order,
-                                                                )            
+            order_product_items.append(OrderProductItem(product=product,
+                                                        product_price=product.price,
+                                                        quantity=product_quantity,
+                                                        order=order,
+                                                        )   
+                                      )
+        OrderProductItem.objects.bulk_create(order_product_items)      
     
     serializer = OrderSerializer(order)
    
