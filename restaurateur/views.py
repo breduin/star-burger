@@ -7,8 +7,10 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
+from django.db.models import Sum, F, OuterRef, Subquery
 
-from foodcartapp.models import Product, Restaurant, Order
+
+from foodcartapp.models import Product, Restaurant, Order, OrderProductItem
 
 
 class Login(forms.Form):
@@ -97,7 +99,12 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.all()
+
+    order_items = OrderProductItem.objects.annotate(sum=F('product__price') * F('quantity')).\
+        filter(order__id=OuterRef('id')).values('order')
+    order_sum = order_items.annotate(item_sum=Sum('sum')).values('item_sum')
+    orders = Order.objects.annotate(sum=Subquery(order_sum))
+
     return render(request, template_name='order_items.html', context={
         'orders': orders
     })
