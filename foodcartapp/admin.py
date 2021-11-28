@@ -109,6 +109,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 class OrderItemsInline(admin.TabularInline):
     model = OrderProductItem
+    extra = 0
 
 
 @admin.register(Order)

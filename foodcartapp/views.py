@@ -1,10 +1,12 @@
 import json
+
 from loguru import logger
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 from django.http import JsonResponse
-from rest_framework.response import Response
 from django.templatetags.static import static
-from rest_framework.decorators import api_view
+from django.db import transaction
 
 from .models import Product, Order, OrderProductItem
 from .serializers import OrderSerializer
@@ -72,15 +74,17 @@ def register_order(request):
 
     order_data = serializer.validated_data
     products = order_data.pop('products')
-    order = Order.objects.create(**order_data)
-    for product_item in products:
-        product = product_item['product']
-        product_quantity = product_item['quantity']
-        order_product_item = OrderProductItem.objects.create(product=product,
-                                                             product_price=product.price,
-                                                             quantity=product_quantity,
-                                                             order=order,
-                                                             )
+
+    with transaction.atomic():
+        order = Order.objects.create(**order_data)
+        for product_item in products:
+            product = product_item['product']
+            product_quantity = product_item['quantity']
+            order_product_item = OrderProductItem.objects.create(product=product,
+                                                                product_price=product.price,
+                                                                quantity=product_quantity,
+                                                                order=order,
+                                                                )            
     
     serializer = OrderSerializer(order)
    

@@ -174,10 +174,6 @@ class OrderProductItem(models.Model):
     class Meta:
         verbose_name = 'позиция в заказе'
         verbose_name_plural = 'позиции в заказе'
-    
-    @property
-    def sum(self):
-        return self.product.price * self.quantity
 
     def __str__(self):
         return f'{self.order} - {self.product.name}'
