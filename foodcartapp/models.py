@@ -142,7 +142,7 @@ class Order(models.Model):
     @admin.display(description='Сумма заказа')
     def amount(self):
         return self.product_items.all().aggregate(sum=
-                    Sum(F('product__price') * F('quantity')))['sum']
+                    Sum(F('product_price') * F('quantity')))['sum']
 
     @admin.display(description='Имя заказчика')
     def customer_name(self):
@@ -162,6 +162,13 @@ class OrderProductItem(models.Model):
                                 on_delete=models.CASCADE,
                                 verbose_name='продукт',
                                 )
+    product_price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+    )                           
     quantity = models.PositiveSmallIntegerField(verbose_name='количество')
 
     class Meta:

@@ -100,7 +100,7 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
 
-    order_items = OrderProductItem.objects.annotate(sum=F('product__price') * F('quantity')).\
+    order_items = OrderProductItem.objects.annotate(sum=F('product_price') * F('quantity')).\
         filter(order__id=OuterRef('id')).values('order')
     order_sum = order_items.annotate(item_sum=Sum('sum')).values('item_sum')
     orders = Order.objects.annotate(sum=Subquery(order_sum))
