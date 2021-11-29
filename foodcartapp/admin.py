@@ -1,7 +1,13 @@
+from loguru import logger
+
 from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.shortcuts import redirect
+from django.conf import settings
+from django.contrib import messages
 
 from .models import Product
 from .models import ProductCategory
@@ -120,3 +126,22 @@ class OrderAdmin(admin.ModelAdmin):
                     'amount',
                     ]
     inlines = [OrderItemsInline, ]
+
+    def response_change(self, request, obj):
+        default_response = super(OrderAdmin, self).response_change(request, obj)
+        if "next" in request.GET:
+
+            # Clearing the messages
+            storage = messages.get_messages(request)
+            for message in storage:
+                _ = message
+
+            url = request.GET['next']
+            is_url_ok = url_has_allowed_host_and_scheme(url, settings.ALLOWED_HOSTS)
+            logger.debug(is_url_ok)
+            if is_url_ok:
+                return redirect(url)
+            else:
+                return default_response
+        else:
+            return default_response
