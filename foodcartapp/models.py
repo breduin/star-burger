@@ -128,12 +128,34 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
-    firstname = models.CharField('Имя заказчика', max_length=32)
-    lastname = models.CharField('Фамилия заказчика', max_length=32)
+
+    STATUSES = [
+        ('unprocessed', 'необработанный'),
+        ('delivering', 'доставляется'),
+        ('completed', 'выполнен'),
+    ]
+
+    firstname = models.CharField('Имя заказчика', 
+                                 max_length=32
+                                 )
+    lastname = models.CharField('Фамилия заказчика', 
+                                max_length=32
+                                )
     phonenumber = PhoneNumberField('Телефон заказчика')
-    address = models.CharField('Адрес доставки', max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Время редактирования')    
+    address = models.CharField('Адрес доставки', 
+                               max_length=255
+                               )
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name='Время создания'
+                                      )
+    updated_at = models.DateTimeField(auto_now=True, 
+                                      verbose_name='Время редактирования'
+                                      )
+    status = models.CharField('Статус', 
+                              max_length=32,
+                              choices=STATUSES,
+                              default='unprocessed'
+                              )
 
     class Meta:
         verbose_name = 'Заказ'

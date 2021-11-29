@@ -1,5 +1,3 @@
-from loguru import logger
-
 from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
@@ -138,7 +136,6 @@ class OrderAdmin(admin.ModelAdmin):
 
             url = request.GET['next']
             is_url_ok = url_has_allowed_host_and_scheme(url, settings.ALLOWED_HOSTS)
-            logger.debug(is_url_ok)
             if is_url_ok:
                 return redirect(url)
             else:
