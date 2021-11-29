@@ -151,6 +151,14 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True, 
                                       verbose_name='Время редактирования'
                                       )
+    called_at = models.DateTimeField(verbose_name='Дата и время звонка клиенту', 
+                                     null=True, 
+                                     blank=True,
+                                     )
+    delivered_at = models.DateTimeField(verbose_name='Дата и время доставки клиенту',
+                                        null=True, 
+                                        blank=True,
+                                        )    
     status = models.CharField('Статус', 
                               max_length=32,
                               choices=STATUSES,

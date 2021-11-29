@@ -122,6 +122,9 @@ class OrderAdmin(admin.ModelAdmin):
                     'address',
                     'phonenumber',
                     'amount',
+                    'created_at',
+                    'called_at',
+                    'delivered_at',
                     ]
     inlines = [OrderItemsInline, ]
 
