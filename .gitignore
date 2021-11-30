@@ -1,6 +1,7 @@
 bundles/**
 node_modules/
 media/
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -113,6 +114,7 @@ celerybeat.pid
 .venv
 env/
 venv/
+nenv/
 ENV/
 env.bak/
 venv.bak/

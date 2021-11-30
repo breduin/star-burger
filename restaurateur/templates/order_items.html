@@ -40,9 +40,9 @@
               <details>
                 <summary style="cursor: point; font-weight: 600;">Выбрать ресторан</summary>
                 <ul>
-                {% for restaurant in distances|restaurants:order.id  %}
+                {% for restaurant, distance in distances|restaurants:order.id  %}
                 <li>
-                {{ restaurant.0 }}, {{ restaurant.1|floatformat:2 }} км
+                {{ restaurant.name }}, {{ distance|floatformat:2 }} км
                 </li>
                 {% empty %}
                 Подходящих ресторанов нет.

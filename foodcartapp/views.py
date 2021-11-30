@@ -1,6 +1,5 @@
 import json
 
-from loguru import logger
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
@@ -10,8 +9,6 @@ from django.db import transaction
 
 from .models import Product, Order, OrderProductItem
 from .serializers import OrderSerializer
-
-logger.add('logs/star-burger.log', format="{time} {level} {message}", rotation="1 MB", level='ERROR')
 
 
 def banners_list_api(request):
