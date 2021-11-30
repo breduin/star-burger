@@ -135,6 +135,12 @@ class Order(models.Model):
         ('completed', 'выполнен'),
     ]
 
+    PAYMENT_METHOD = [
+        ('cash', 'наличный'),
+        ('cashless', 'безналичный'),
+        ('credit', 'кредит'),
+    ]
+
     firstname = models.CharField('Имя заказчика', 
                                  max_length=32
                                  )
@@ -142,6 +148,7 @@ class Order(models.Model):
                                 max_length=32
                                 )
     phonenumber = PhoneNumberField('Телефон заказчика')
+
     address = models.CharField('Адрес доставки', 
                                max_length=255
                                )
@@ -164,11 +171,24 @@ class Order(models.Model):
                               choices=STATUSES,
                               default='unprocessed'
                               )
-
+    payment_method = models.CharField('Способ оплаты', 
+                                      max_length=32,
+                                      choices=PAYMENT_METHOD,
+                                      default='cashless'
+                                      )
     comment = models.TextField('Комментарий',
                                default='',
                                blank=True,
-                               )
+                               )    
+    restaurant = models.ForeignKey(
+        Restaurant,
+        related_name='orders',
+        verbose_name="Ресторан",
+        help_text='Выберите ресторан для исполнения заказа',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )                                                                 
 
     class Meta:
         verbose_name = 'Заказ'
@@ -196,6 +216,7 @@ class OrderProductItem(models.Model):
     product = models.ForeignKey(Product,
                                 on_delete=models.CASCADE,
                                 verbose_name='продукт',
+                                related_name='order_items',
                                 )
     product_price = models.DecimalField(
         'цена',

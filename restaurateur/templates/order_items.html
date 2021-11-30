@@ -15,9 +15,11 @@
     <tr>
       <th>ID заказа</th>
       <th>Статус</th>
+      <th>Способ оплаты</th>
       <th>Стоимость заказа</th>
       <th>Клиент</th>
       <th>Телефон</th>
+      <th>Ресторан</th>
       <th>Адрес доставки</th>
       <th>Комментарий</th>
       <th>Ссылка на админку</th>
@@ -27,9 +29,11 @@
       <tr>
         <td>{{ order.id }}</td>
         <td>{{ order.get_status_display }}</td>
+        <td>{{ order.get_payment_method_display }}</td>
         <td>{{ order.sum }} руб.</td>
         <td>{{ order.customer_name }}</td>
         <td>{{ order.phonenumber.as_international }}</td>
+        <td>{{ order.restaurant|default_if_none:"не выбран" }}</td>
         <td>{{ order.address }}</td>
         <td>{{ order.comment }}</td>
         <td><a href="{% url 'admin:foodcartapp_order_change' order.id %}?next={{ request.get_full_path|urlencode }}">редактировать</a></td>

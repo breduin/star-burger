@@ -12,6 +12,7 @@ from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order, OrderProductItem
+from .forms import OrderAdminForm
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -125,8 +126,10 @@ class OrderAdmin(admin.ModelAdmin):
                     'created_at',
                     'called_at',
                     'delivered_at',
+                    'payment_method',
                     ]
     inlines = [OrderItemsInline, ]
+    form = OrderAdminForm
 
     def response_change(self, request, obj):
         default_response = super(OrderAdmin, self).response_change(request, obj)
@@ -145,3 +148,4 @@ class OrderAdmin(admin.ModelAdmin):
                 return default_response
         else:
             return default_response
+

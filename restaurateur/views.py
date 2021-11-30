@@ -9,8 +9,8 @@ from django.contrib.auth import views as auth_views
 
 from django.db.models import Sum, F, OuterRef, Subquery
 
-
 from foodcartapp.models import Product, Restaurant, Order, OrderProductItem
+from foodcartapp.querysets import get_restaurants, get_products
 
 
 class Login(forms.Form):
@@ -67,8 +67,8 @@ def is_manager(user):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_products(request):
-    restaurants = list(Restaurant.objects.order_by('name'))
-    products = list(Product.objects.prefetch_related('menu_items'))
+    restaurants = get_restaurants().order_by('name')
+    products = get_products()
 
     default_availability = {restaurant.id: False for restaurant in restaurants}
     products_with_restaurants = []
@@ -93,7 +93,7 @@ def view_products(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_restaurants(request):
     return render(request, template_name="restaurants_list.html", context={
-        'restaurants': Restaurant.objects.all(),
+        'restaurants': get_restaurants(),
     })
 
 
