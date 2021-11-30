@@ -12,8 +12,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-SECRET_KEY = env('SECRET_KEY', 'etirgvonenrfnoerngorenogneongg334g')
-DEBUG = env.bool('DEBUG', True)
+SECRET_KEY = env.str('SECRET_KEY')
+DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'phonenumbers',
     'rest_framework',
+    'geopy',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +66,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, "templates"),
+            os.path.join(BASE_DIR, "restaurateur/templatetags"),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -128,3 +130,4 @@ STATICFILES_DIRS = [
 
 PHONENUMBER_DEFAULT_REGION = 'RU'
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
+YANDEX_MAPS_API_KEY = env.str("YANDEX_MAPS_API_KEY")

@@ -149,3 +149,11 @@ class OrderAdmin(admin.ModelAdmin):
         else:
             return default_response
 
+    def save_model(self, request, obj, form, change):
+        if change:
+            previous_address = Order.objects.get(id=obj.id).address
+            current_address = obj.address
+            if previous_address != current_address:
+                obj.latitude = None
+                obj.longitude = None
+        super().save_model(request, obj, form, change)

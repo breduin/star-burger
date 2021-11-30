@@ -1,10 +1,11 @@
 {% extends 'base_restaurateur_page.html' %}
+{% load order_restaurants %}
 
-{% block title %}Необработанные заказы | Star Burger{% endblock %}
+{% block title %}Заказы | Star Burger{% endblock %}
 
 {% block content %}
   <center>
-    <h2>Необработанные заказы</h2>
+    <h2>Заказы</h2>
   </center>
 
   <hr/>
@@ -33,7 +34,23 @@
         <td>{{ order.sum }} руб.</td>
         <td>{{ order.customer_name }}</td>
         <td>{{ order.phonenumber.as_international }}</td>
-        <td>{{ order.restaurant|default_if_none:"не выбран" }}</td>
+        <td>{% if order.restaurant %}
+                {{ order.restaurant }}
+            {% else %}
+              <details>
+                <summary style="cursor: point; font-weight: 600;">Выбрать ресторан</summary>
+                <ul>
+                {% for restaurant in distances|restaurants:order.id  %}
+                <li>
+                {{ restaurant.0 }}, {{ restaurant.1|floatformat:2 }} км
+                </li>
+                {% empty %}
+                Подходящих ресторанов нет.
+                {% endfor %}
+                </ul>
+              </details>                
+            {%endif%}
+            </td>
         <td>{{ order.address }}</td>
         <td>{{ order.comment }}</td>
         <td><a href="{% url 'admin:foodcartapp_order_change' order.id %}?next={{ request.get_full_path|urlencode }}">редактировать</a></td>

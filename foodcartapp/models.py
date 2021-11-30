@@ -5,6 +5,8 @@ from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
 from django.contrib import admin
 
+from .validators import lat_validators, lng_validators
+
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -21,6 +23,16 @@ class Restaurant(models.Model):
         max_length=50,
         blank=True,
     )
+    latitude = models.FloatField(validators=lat_validators,
+                                 verbose_name='Широта', 
+                                 null=True,
+                                 blank=True,
+                                 )
+    longitude = models.FloatField(validators=lng_validators,
+                                  verbose_name='Долгота',
+                                  null=True,
+                                  blank=True,
+                                  )
 
     class Meta:
         verbose_name = 'ресторан'
@@ -188,7 +200,17 @@ class Order(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-    )                                                                 
+    )                     
+    latitude = models.FloatField(validators=lat_validators,
+                                 verbose_name='Широта', 
+                                 null=True,
+                                 blank=True,
+                                 )
+    longitude = models.FloatField(validators=lng_validators,
+                                  verbose_name='Долгота',
+                                  null=True,
+                                  blank=True,
+                                  )                                                
 
     class Meta:
         verbose_name = 'Заказ'

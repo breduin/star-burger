@@ -1,3 +1,4 @@
+from loguru import logger
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -10,7 +11,8 @@ from django.contrib.auth import views as auth_views
 from django.db.models import Sum, F, OuterRef, Subquery
 
 from foodcartapp.models import Product, Restaurant, Order, OrderProductItem
-from foodcartapp.querysets import get_restaurants, get_products
+from foodcartapp.querysets import get_restaurants, get_products, get_restaurants_with_order_products
+from restaurateur.geolocation import get_restaurants_distances
 
 
 class Login(forms.Form):
@@ -104,7 +106,13 @@ def view_orders(request):
         filter(order__id=OuterRef('id')).values('order')
     order_sum = order_items.annotate(item_sum=Sum('sum')).values('item_sum')
     orders = Order.objects.annotate(sum=Subquery(order_sum))
-
+    
+    distances = {}
+    for order in orders:
+        restaurants = get_restaurants_with_order_products(order.id)
+        distances[order.id] = get_restaurants_distances(restaurants, order)
+   
     return render(request, template_name='order_items.html', context={
-        'orders': orders
+        'orders': orders,
+        'distances': distances,
     })
