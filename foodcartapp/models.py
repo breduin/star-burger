@@ -136,7 +136,7 @@ class RestaurantMenuItem(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.restaurant.name} - {self.product.name}"
+        return f'{self.restaurant.name} - {self.product.name}'
 
 
 class Order(models.Model):
@@ -195,14 +195,14 @@ class Order(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
         related_name='orders',
-        verbose_name="Ресторан",
+        verbose_name='Ресторан',
         help_text='Выберите ресторан для исполнения заказа',
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-    )                     
+    )           
     latitude = models.FloatField(validators=lat_validators,
-                                 verbose_name='Широта', 
+                                 verbose_name='Широта',
                                  null=True,
                                  blank=True,
                                  )
@@ -210,7 +210,7 @@ class Order(models.Model):
                                   verbose_name='Долгота',
                                   null=True,
                                   blank=True,
-                                  )                                                
+                                  )
 
     class Meta:
         verbose_name = 'Заказ'
@@ -218,12 +218,15 @@ class Order(models.Model):
 
     @admin.display(description='Сумма заказа')
     def amount(self):
-        return self.product_items.all().aggregate(sum=
-                    Sum(F('product_price') * F('quantity')))['sum']
+        return self.product_items.all().aggregate(
+            sum=Sum(
+                F('product_price') * F('quantity')
+                )
+                )['sum']
 
     @admin.display(description='Имя заказчика')
     def customer_name(self):
-        return f'{self.firstname} {self.lastname}'           
+        return f'{self.firstname} {self.lastname}'
 
     def __str__(self):
         return f'{self.firstname} {self.lastname} > {self.address} '

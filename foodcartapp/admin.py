@@ -108,7 +108,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductCategory)
-class ProductAdmin(admin.ModelAdmin):
+class ProductCategoryAdmin(admin.ModelAdmin):
     pass
 
 
@@ -133,7 +133,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     def response_change(self, request, obj):
         default_response = super(OrderAdmin, self).response_change(request, obj)
-        if "next" in request.GET:
+        if 'next' in request.GET:
 
             # Clearing the messages
             storage = messages.get_messages(request)

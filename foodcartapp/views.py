@@ -1,11 +1,9 @@
-import json
-
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
-from django.db import transaction
 
 from .models import Product, Order, OrderProductItem
 from .serializers import OrderSerializer
@@ -85,7 +83,7 @@ def register_order(request):
                                                         )   
                                       )
         OrderProductItem.objects.bulk_create(order_product_items)      
-    
+
     serializer = OrderSerializer(order)
    
     return Response(serializer.data)

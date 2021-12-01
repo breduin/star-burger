@@ -1,5 +1,5 @@
 from django import forms
-from .models import Order, RestaurantMenuItem, Restaurant, Product
+from .models import Order
 from .querysets import get_restaurants_with_order_products
 
 
@@ -11,4 +11,4 @@ class OrderAdminForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        fields = "__all__"
+        fields = '__all__'
