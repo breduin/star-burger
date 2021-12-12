@@ -7,10 +7,9 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-from django.db.models import Sum, F, OuterRef, Subquery
+from django.db.models import Sum, F, Q, Count
 
-from foodcartapp.models import Product, Restaurant, Order, OrderProductItem
-from foodcartapp.querysets import get_restaurants, get_products, get_restaurants_with_order_products
+from foodcartapp.models import Product, Restaurant, Order, OrderProductItem, RestaurantMenuItem
 from restaurateur.geolocation import get_restaurants_distances
 
 
@@ -68,8 +67,8 @@ def is_manager(user):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_products(request):
-    restaurants = get_restaurants().order_by('name')
-    products = get_products()
+    restaurants = Restaurant.objects.prefetch_related('menu_items').order_by('name')
+    products = Product.objects.prefetch_related('menu_items')
 
     default_availability = {restaurant.id: False for restaurant in restaurants}
     products_with_restaurants = []
@@ -94,22 +93,35 @@ def view_products(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_restaurants(request):
     return render(request, template_name="restaurants_list.html", context={
-        'restaurants': get_restaurants(),
+        'restaurants': Restaurant.objects.prefetch_related('menu_items').order_by('name'),
     })
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
 
-    order_items = OrderProductItem.objects.annotate(sum=F('product_price') * F('quantity')).\
-        filter(order__id=OuterRef('id')).values('order')
-    order_sum = order_items.annotate(item_sum=Sum('sum')).values('item_sum')
-    orders = Order.objects.annotate(sum=Subquery(order_sum))
+    orders = Order.summed.prefetch_related('product_items__product').all()
+    all_restaurants = Restaurant.objects.prefetch_related('menu_items').all()
+
+    products_in_restaurants = {}
+    for restaurant in all_restaurants:
+        products_in_restaurant = restaurant.menu_items.filter( 
+            availability=True
+            ).values_list('product__id', flat=True)
+        products_in_restaurants[restaurant] = products_in_restaurant
     
     distances = {}
     for order in orders:
-        restaurants = get_restaurants_with_order_products(order.id)
-        distances[order.id] = get_restaurants_distances(restaurants, order)
+        products_in_order = order.product_items.all()
+        restaurants_with_all_order_products = [
+            r for r in all_restaurants if all(
+                [p.product.id in products_in_restaurants[r] for p in products_in_order]) 
+            ]   
+
+        distances[order.id] = get_restaurants_distances(
+            restaurants_with_all_order_products, 
+            order
+            )
    
     return render(request, template_name='order_items.html', context={
         'orders': orders,

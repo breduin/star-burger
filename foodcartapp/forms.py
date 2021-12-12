@@ -7,7 +7,9 @@ class OrderAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         order = self.instance
-        self.fields['restaurant'].queryset = get_restaurants_with_order_products(order.id)
+        self.fields[
+            'restaurant'
+            ].queryset = get_restaurants_with_order_products(order.id)
 
     class Meta:
         model = Order

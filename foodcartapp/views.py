@@ -67,11 +67,11 @@ def register_order(request):
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True) 
 
-    order_data = serializer.validated_data
-    products = order_data.pop('products')
+    order_positions = serializer.validated_data
+    products = order_positions.pop('products')
 
     with transaction.atomic():
-        order = Order.objects.create(**order_data)
+        order = Order.objects.create(**order_positions)
         order_product_items = []
         for product_item in products:
             product = product_item['product']

@@ -2,7 +2,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import Sum, F
+from django.db.models import Sum, F, CharField
+from django.db.models.functions import Concat
+from django.db.models import OuterRef, Subquery
 from django.contrib import admin
 
 from .validators import lat_validators, lng_validators
@@ -139,6 +141,51 @@ class RestaurantMenuItem(models.Model):
         return f'{self.restaurant.name} - {self.product.name}'
 
 
+class OrderProductItem(models.Model):
+    order = models.ForeignKey('Order',
+                              verbose_name='заказ',
+                              related_name='product_items',
+                              on_delete=models.CASCADE,
+                              )
+    product = models.ForeignKey(Product,
+                                on_delete=models.CASCADE,
+                                verbose_name='продукт',
+                                related_name='order_items',
+                                )
+    product_price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )                           
+    quantity = models.PositiveSmallIntegerField(
+        verbose_name='количество',
+        validators=[MinValueValidator(0)],
+    )
+
+    class Meta:
+        verbose_name = 'позиция в заказе'
+        verbose_name_plural = 'позиции в заказе'
+
+    def __str__(self):
+        return f'{self.order} - {self.product.name}'
+
+
+class OrderSumManager(models.Manager):
+
+    def get_queryset(self):
+        order_items = OrderProductItem.objects.annotate(
+            sum=F('product_price') * F('quantity')
+            ).filter(order__id=OuterRef('id')).values('order')
+        order_sum = order_items.annotate(
+            item_sum=Sum('sum')
+            ).values('item_sum')
+
+        return Order.objects.annotate(
+            sum=Subquery(order_sum)
+            )
+
+
 class Order(models.Model):
 
     STATUSES = [
@@ -159,37 +206,41 @@ class Order(models.Model):
     lastname = models.CharField('Фамилия заказчика', 
                                 max_length=32
                                 )
-    phonenumber = PhoneNumberField('Телефон заказчика')
+    phonenumber = PhoneNumberField('Телефон заказчика', db_index=True)
 
     address = models.CharField('Адрес доставки', 
                                max_length=255
                                )
     created_at = models.DateTimeField(auto_now_add=True,
-                                      verbose_name='Время создания'
+                                      verbose_name='Время создания',
+                                      db_index=True,
                                       )
     updated_at = models.DateTimeField(auto_now=True, 
-                                      verbose_name='Время редактирования'
+                                      verbose_name='Время редактирования',
+                                      db_index=True,
                                       )
     called_at = models.DateTimeField(verbose_name='Дата и время звонка клиенту', 
                                      null=True, 
                                      blank=True,
+                                     db_index=True,
                                      )
     delivered_at = models.DateTimeField(verbose_name='Дата и время доставки клиенту',
                                         null=True, 
                                         blank=True,
+                                        db_index=True,
                                         )    
     status = models.CharField('Статус', 
                               max_length=32,
                               choices=STATUSES,
-                              default='unprocessed'
+                              default='unprocessed',
+                              db_index=True,
                               )
     payment_method = models.CharField('Способ оплаты', 
                                       max_length=32,
                                       choices=PAYMENT_METHOD,
-                                      default='cashless'
+                                      db_index=True,
                                       )
     comment = models.TextField('Комментарий',
-                               default='',
                                blank=True,
                                )    
     restaurant = models.ForeignKey(
@@ -212,17 +263,16 @@ class Order(models.Model):
                                   blank=True,
                                   )
 
+    summed = OrderSumManager()
+    objects = models.Manager()
+
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
     @admin.display(description='Сумма заказа')
     def amount(self):
-        return self.product_items.all().aggregate(
-            sum=Sum(
-                F('product_price') * F('quantity')
-                )
-                )['sum']
+        return self.sum
 
     @admin.display(description='Имя заказчика')
     def customer_name(self):
@@ -231,30 +281,3 @@ class Order(models.Model):
     def __str__(self):
         return f'{self.firstname} {self.lastname} > {self.address} '
 
-
-class OrderProductItem(models.Model):
-    order = models.ForeignKey(Order,
-                              verbose_name='заказ',
-                              related_name='product_items',
-                              on_delete=models.CASCADE,
-                              )
-    product = models.ForeignKey(Product,
-                                on_delete=models.CASCADE,
-                                verbose_name='продукт',
-                                related_name='order_items',
-                                )
-    product_price = models.DecimalField(
-        'цена',
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        default=0,
-    )                           
-    quantity = models.PositiveSmallIntegerField(verbose_name='количество')
-
-    class Meta:
-        verbose_name = 'позиция в заказе'
-        verbose_name_plural = 'позиции в заказе'
-
-    def __str__(self):
-        return f'{self.order} - {self.product.name}'

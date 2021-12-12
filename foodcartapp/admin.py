@@ -132,7 +132,7 @@ class OrderAdmin(admin.ModelAdmin):
     form = OrderAdminForm
 
     def response_change(self, request, obj):
-        default_response = super(OrderAdmin, self).response_change(request, obj)
+        default_response = super().response_change(request, obj)
         if 'next' in request.GET:
 
             # Clearing the messages
@@ -150,10 +150,12 @@ class OrderAdmin(admin.ModelAdmin):
             return default_response
 
     def save_model(self, request, obj, form, change):
-        if change:
-            previous_address = Order.objects.get(id=obj.id).address
-            current_address = obj.address
-            if previous_address != current_address:
-                obj.latitude = None
-                obj.longitude = None
+        if not change:
+            super().save_model(request, obj, form, change)
+            
+        previous_address = Order.objects.get(id=obj.id).address
+        current_address = obj.address
+        if previous_address != current_address:
+            obj.latitude = None
+            obj.longitude = None
         super().save_model(request, obj, form, change)
