@@ -4,8 +4,12 @@ from .models import Restaurant, Product, RestaurantMenuItem
 
 
 def get_restaurants_with_order_products(order_id: int) -> models.QuerySet:
-    """Return restaurants with complete set of products in order with ID=order_id."""
-    restaurants = Restaurant.objects.prefetch_related('menu_items').order_by('name')
+    """
+    Return restaurants with complete set of products in order with ID=order_id.
+    """
+    restaurants = Restaurant.objects.prefetch_related(
+        'menu_items'
+        ).order_by('name')
     products = Product.objects.prefetch_related('order_items')
     products_in_order = products.filter(
         order_items__order=order_id,
@@ -28,9 +32,3 @@ def get_restaurants_with_order_products(order_id: int) -> models.QuerySet:
             )
             ]
     return restaurants.filter(id__in=restaurants_with_complete_set)
-
-
-
-
-
-

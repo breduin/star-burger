@@ -133,21 +133,19 @@ class OrderAdmin(admin.ModelAdmin):
 
     def response_change(self, request, obj):
         default_response = super().response_change(request, obj)
-        if 'next' in request.GET:
-
-            # Clearing the messages
-            storage = messages.get_messages(request)
-            for message in storage:
-                _ = message
-
-            url = request.GET['next']
-            is_url_ok = url_has_allowed_host_and_scheme(url, settings.ALLOWED_HOSTS)
-            if is_url_ok:
-                return redirect(url)
-            else:
-                return default_response
-        else:
+        if not 'next' in request.GET:
             return default_response
+
+        # Clearing the messages
+        storage = messages.get_messages(request)
+        for message in storage:
+            _ = message
+
+        url = request.GET['next']
+        if url_has_allowed_host_and_scheme(url, settings.ALLOWED_HOSTS):
+            return redirect(url)
+        return default_response
+            
 
     def save_model(self, request, obj, form, change):
         if not change:

@@ -1,15 +1,16 @@
 import requests
+
 from collections import OrderedDict
-from decimal import *
 from geopy.distance import great_circle as GC
 
-from django.shortcuts import render
 from django.conf import settings
+from django.shortcuts import render
 
 from foodcartapp.models import Restaurant, Order
 
 
 APIKEY = settings.YANDEX_MAPS_API_KEY
+
 
 def fetch_coordinates(address, apikey=APIKEY):
     base_url = "https://geocode-maps.yandex.ru/1.x"
@@ -43,9 +44,7 @@ def get_restaurants_distances(restaurants, order) -> dict:
         latitude, longitude = fetch_coordinates(order.address)
         order.latitude = latitude
         order.longitude = longitude
-        Order.objects.filter(id=order.id).update(latitude=latitude, 
-                                                 longitude=longitude
-                                                 )
+        order.save()
         order_coords = (latitude, longitude)
     else:
         order_coords = (order.latitude, order.longitude)
@@ -56,21 +55,16 @@ def get_restaurants_distances(restaurants, order) -> dict:
             latitude, longitude = fetch_coordinates(restaurant.address)
             restaurant.latitude = latitude
             restaurant.longitude = longitude
-            Restaurant.objects.filter(id=restaurant.id).update(latitude=latitude, 
-                                                           longitude=longitude
-                                                           )
+            restaurant.save()
             restaurant_coords = (latitude, longitude)
         else:
             restaurant_coords = (restaurant.latitude, restaurant.longitude)
-        
+
         distance = GC(order_coords, restaurant_coords).km
         restaurants_distances[distance] = restaurant
-    
-    restaurants_distances_ordered = OrderedDict()
-    while len(restaurants_distances) > 0:
-        distances = restaurants_distances.keys()
-        min_distance = min(distances)
-        restaurant = restaurants_distances.pop(min_distance)
-        restaurants_distances_ordered[restaurant] = min_distance
+
+    restaurants_distances_ordered = dict(
+        sorted(restaurants_distances.items(), key=lambda x: x[0])
+        )
 
     return restaurants_distances_ordered

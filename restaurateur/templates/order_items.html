@@ -40,7 +40,7 @@
               <details>
                 <summary style="cursor: point; font-weight: 600;">Выбрать ресторан</summary>
                 <ul>
-                {% for restaurant, distance in distances|restaurants:order.id  %}
+                {% for distance, restaurant in distances|restaurants:order.id  %}
                 <li>
                 {{ restaurant.name }}, {{ distance|floatformat:2 }} км
                 </li>

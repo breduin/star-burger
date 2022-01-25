@@ -160,7 +160,7 @@ class OrderProductItem(models.Model):
     )                           
     quantity = models.PositiveSmallIntegerField(
         verbose_name='количество',
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(1)],
     )
 
     class Meta:
@@ -181,7 +181,7 @@ class OrderSumManager(models.Manager):
             item_sum=Sum('sum')
             ).values('item_sum')
 
-        return Order.objects.annotate(
+        return super().get_queryset().annotate(
             sum=Subquery(order_sum)
             )
 
@@ -263,8 +263,7 @@ class Order(models.Model):
                                   blank=True,
                                   )
 
-    summed = OrderSumManager()
-    objects = models.Manager()
+    objects = OrderSumManager()
 
     class Meta:
         verbose_name = 'Заказ'
