@@ -10,9 +10,9 @@ def get_restaurants_with_order_products(order_id: int) -> models.QuerySet:
     restaurants = Restaurant.objects.prefetch_related(
         'menu_items'
         ).order_by('name')
-    products = Product.objects.prefetch_related('order_items')
+    products = Product.objects.prefetch_related('items')
     products_in_order = products.filter(
-        order_items__order=order_id,
+        items__order=order_id,
         ).order_by('name').values_list('id')
     menu_items = RestaurantMenuItem.objects.all()
 

@@ -33,7 +33,9 @@ def fetch_coordinates(address, apikey=APIKEY):
 def get_distance(address1, address2):
     coord1 = fetch_coordinates(address1)
     coord2 = fetch_coordinates(address2)
-    return GC(coord1, coord2).km
+    if all([coord1, coord2]):
+        return GC(coord1, coord2).km
+    return None
 
 
 def get_restaurants_distances(restaurants, order) -> dict:
@@ -41,7 +43,10 @@ def get_restaurants_distances(restaurants, order) -> dict:
     # FIXME объединить код для получения координат order и restaurant (ContentType?)
      
     if not all([order.latitude, order.longitude]):
-        latitude, longitude = fetch_coordinates(order.address)
+        if order_coordinates:=fetch_coordinates(order.address):
+            latitude, longitude = order_coordinates
+        else:
+            return {}
         order.latitude = latitude
         order.longitude = longitude
         order.save()
@@ -52,19 +57,22 @@ def get_restaurants_distances(restaurants, order) -> dict:
     restaurants_distances = {}
     for restaurant in restaurants:
         if not all([restaurant.latitude, restaurant.longitude]):
-            latitude, longitude = fetch_coordinates(restaurant.address)
-            restaurant.latitude = latitude
-            restaurant.longitude = longitude
-            restaurant.save()
-            restaurant_coords = (latitude, longitude)
+            if restaurant_coordinates:=fetch_coordinates(restaurant.address):
+                latitude, longitude = restaurant_coordinates
+                restaurant.latitude = latitude
+                restaurant.longitude = longitude
+                restaurant.save()
+                restaurant_coords = (latitude, longitude)
+            else:
+                continue
         else:
             restaurant_coords = (restaurant.latitude, restaurant.longitude)
 
         distance = GC(order_coords, restaurant_coords).km
-        restaurants_distances[distance] = restaurant
+        restaurants_distances[restaurant] = distance
 
     restaurants_distances_ordered = dict(
-        sorted(restaurants_distances.items(), key=lambda x: x[0])
+        sorted(restaurants_distances.items(), key=lambda x: x[1])
         )
 
     return restaurants_distances_ordered

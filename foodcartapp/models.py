@@ -18,7 +18,6 @@ class Restaurant(models.Model):
     address = models.CharField(
         'адрес',
         max_length=100,
-        blank=True,
     )
     contact_phone = models.CharField(
         'контактный телефон',
@@ -144,13 +143,13 @@ class RestaurantMenuItem(models.Model):
 class OrderProductItem(models.Model):
     order = models.ForeignKey('Order',
                               verbose_name='заказ',
-                              related_name='product_items',
+                              related_name='items',
                               on_delete=models.CASCADE,
                               )
     product = models.ForeignKey(Product,
                                 on_delete=models.CASCADE,
                                 verbose_name='продукт',
-                                related_name='order_items',
+                                related_name='items',
                                 )
     product_price = models.DecimalField(
         'цена',
@@ -171,18 +170,11 @@ class OrderProductItem(models.Model):
         return f'{self.order} - {self.product.name}'
 
 
-class OrderSumManager(models.Manager):
+class OrderManager(models.Manager):
 
     def get_queryset(self):
-        order_items = OrderProductItem.objects.annotate(
-            sum=F('product_price') * F('quantity')
-            ).filter(order__id=OuterRef('id')).values('order')
-        order_sum = order_items.annotate(
-            item_sum=Sum('sum')
-            ).values('item_sum')
-
         return super().get_queryset().annotate(
-            sum=Subquery(order_sum)
+            sum=Sum(F('items__product_price') * F('items__quantity'))
             )
 
 
@@ -263,7 +255,7 @@ class Order(models.Model):
                                   blank=True,
                                   )
 
-    objects = OrderSumManager()
+    objects = OrderManager()
 
     class Meta:
         verbose_name = 'Заказ'

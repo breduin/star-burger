@@ -10,6 +10,7 @@ from django.contrib.auth import views as auth_views
 from django.db.models import Sum, F, Q, Count
 
 from foodcartapp.models import Product, Restaurant, Order, OrderProductItem, RestaurantMenuItem
+from foodcartapp.querysets import get_restaurants_with_order_products
 from restaurateur.geolocation import get_restaurants_distances
 
 
@@ -100,25 +101,11 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
 
-    orders = Order.objects.prefetch_related(
-        'product_items__product'
-        ).exclude(status='completed')
-    all_restaurants = Restaurant.objects.prefetch_related('menu_items').all()
-
-    products_in_restaurants = {}
-    for restaurant in all_restaurants:
-        products_in_restaurant = restaurant.menu_items.filter( 
-            availability=True
-            ).values_list('product__id', flat=True)
-        products_in_restaurants[restaurant] = products_in_restaurant
+    orders = Order.objects.exclude(status='completed')
     
     distances = {}
     for order in orders:
-        products_in_order = order.product_items.all()
-        restaurants_with_all_order_products = [
-            r for r in all_restaurants if all(
-                [p.product.id in products_in_restaurants[r] for p in products_in_order]) 
-            ]   
+        restaurants_with_all_order_products = get_restaurants_with_order_products(order.id)
 
         distances[order.id] = get_restaurants_distances(
             restaurants_with_all_order_products, 
