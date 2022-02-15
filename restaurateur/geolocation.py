@@ -30,27 +30,18 @@ def fetch_coordinates(address, apikey=APIKEY):
     return lat, lon
 
 
-def get_distance(address1, address2):
-    coord1 = fetch_coordinates(address1)
-    coord2 = fetch_coordinates(address2)
-    if all([coord1, coord2]):
-        return GC(coord1, coord2).km
-    return None
-
-
 def get_restaurants_distances(restaurants, order) -> dict:
 
     # FIXME объединить код для получения координат order и restaurant (ContentType?)
      
     if not all([order.latitude, order.longitude]):
-        if order_coordinates:=fetch_coordinates(order.address):
-            latitude, longitude = order_coordinates
+        if order_coords:=fetch_coordinates(order.address):
+            latitude, longitude = order_coords
         else:
             return {}
         order.latitude = latitude
         order.longitude = longitude
         order.save()
-        order_coords = (latitude, longitude)
     else:
         order_coords = (order.latitude, order.longitude)
 
