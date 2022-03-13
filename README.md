@@ -132,18 +132,41 @@ Parcel будет следить за файлами в каталоге `bundle
 
 ## Как запустить prod-версию сайта
 
-Собрать фронтенд:
+### Собрать фронтенд:
 
 ```sh
 parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 ```
 
-Настроить бэкенд: создать файл `.env` в каталоге `star_burger/` со следующими настройками:
+### СУБД PostgreSQL
+
+Установите PostgreSQL по [инструкции](https://www.postgresql.org/download/linux/debian/).
+
+Установите драйвер PostgreSQL для Python:
+
+```sh
+pip install psycopg2-binary
+```
+
+Создайте БД для проекта:
+```sh
+su - postgres
+psql
+create database <имя базы данных>;
+create user <имя пользователя> with password '<пароль>';
+grant all privileges on database <имя базы данных> to <имя пользователя>;
+\q
+exit
+```
+### Настроить бэкенд
+
+Cоздайте файл `.env` в каталоге `star_burger/` со следующими настройками:
 
 - `DEBUG` — дебаг-режим. Поставьте `False`.
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте. Не стоит использовать значение по-умолчанию, **замените на своё**.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_MAPS_API_KEY` - ключ API Яндекс.Карт.
+- `DB_URL` - данные для доступа к БД в виде DB_URL=postgres://<имя пользователя>:<пароль>@localhost:5432/<имя базы данных>
 
 ## Логирование (Rollbar)
 
