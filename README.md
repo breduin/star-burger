@@ -180,6 +180,15 @@ pip install rollbar
 
 - `ROLLBAR_TOKEN="<rollbar access token>"`
 
+## Деплой
+
+[Демо версия](https://starburger-spb.ru/)
+
+Сервер 80.78.246.116
+
+Деплойный скрипт: /opt/starburgerproject/starbuger_deploy.sh
+
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
